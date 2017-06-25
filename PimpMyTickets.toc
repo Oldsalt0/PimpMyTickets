@@ -1,0 +1,7 @@
+## Interface: 20400
+## Title: PimpMyTickets
+## Author: Oldsalt (Smolderforge)
+## Notes: |cff0000ffEnhanced |cffffffffGM Ticket |cffff0000Addon|r
+## DefaultState: disabled
+## SavedVariables: SFColor, SFScale
+PimpMyTickets.lua
