@@ -7,7 +7,7 @@
   <img src="http://i.imgur.com/abYICuD.png" width="205"/>
 </p>
 
-PimpMyTickets is a TBC (TrinityCore) GM Ticket AddOn made to simplify Game Masters' life.  
+PimpMyTickets is a TBC (TrinityCore/OregonCore) GM Ticket AddOn made to simplify Game Masters' life.  
 The main guidelines are to keep the AddOn easy to use, customisable and memory efficient.  
 
 
