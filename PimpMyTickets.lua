@@ -895,7 +895,7 @@ end)
 -- Close Button
 SFTicketCloseButton:SetScript("OnClick", function()
 	SFTicketInputBox:ClearFocus()
-	if SFTicketInputBox:GetText() ~= "" then
+	if SFTicketInputBox:GetText() ~= "" and ( SFTAssignTable[SFTicketInputBox:GetText()] == UnitName("player") or SFTAssignTable[SFTicketInputBox:GetText()] == "" or SFTAssignTable[SFTicketInputBox:GetText()] == nil ) then
 		PlaySound("UChatScrollButton")
 		SendChatMessage(".ticket close "..SFTicketInputBox:GetText(), "GUILD", nil)
 		if #SFTListTable == 1 then
@@ -912,6 +912,11 @@ SFTicketCloseButton:SetScript("OnClick", function()
 				end
 			end
 		end
+	elseif SFTAssignTable[SFTicketInputBox:GetText()] ~= UnitName("player") then
+		GameTooltip:SetOwner(SFTicketHideButton, "ANCHOR_RIGHT", -33, 3)
+		GameTooltip:SetText("Ticket assigned to another GM")
+		GameTooltip:Show()
+		GameTooltip:FadeOut()
 	else
 		GameTooltip:SetOwner(SFTicketHideButton, "ANCHOR_RIGHT", -33, 3)
 		GameTooltip:SetText("Please enter a ticket number")
