@@ -376,7 +376,12 @@ SFSettingsFrame:SetPoint("CENTER")
 SFSettingsFrame:SetClampedToScreen(true)
 SFSettingsFrame:SetWidth(180)
 SFSettingsFrame:SetHeight(270)
-SFSettingsFrame:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border", tile = false, edgeSize = 16 })
+SFSettingsFrame:SetBackdrop({
+	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+	edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+	tile = false,
+	edgeSize = 16
+})
 SFSettingsFrame:SetBackdropBorderColor(0, 0, 0)
 SFSettingsFrame:Hide()
 
@@ -1013,12 +1018,30 @@ SFTicketInfoBackButton:SetScript("OnClick", function()
 end)
 
 
--- Online Button
-SFTicketOnlineButton:SetScript("OnClick", function()
-	SFTicketInputBox:ClearFocus()
-	PlaySound("UChatScrollButton")
-	SendChatMessage(".ticket online", "GUILD", nil)
-end)
+-- OnUpdate script to delay TicketListing()
+local total = 0
+local function ListUpdate(self, elapsed)
+	total = total + elapsed
+	if total >= 1 then
+		if #SFTListTable ~= nil and #SFTListTable ~= 0 then
+			TicketListing()
+		else
+			SFTicketOnlineButton:SetAlpha(1)
+		end
+		total = 0
+		TicketListingUpdate:SetScript("OnUpdate", nil)
+	end
+end
+
+
+-- Online Ticket Number table filtering
+local function OnlineNum(onum)
+	if strfind(onum, "Ticket|r:|cff00ccff ") then
+		local SFOnlineTicketID = ""
+		_, _, SFOnlineTicketID = strfind(onum, "Ticket|r:|cff00ccff (%d+)")
+		SFTOnlineTable[SFOnlineTicketID] = 1
+	end
+end
 
 
 -- Ticket Number List table filtering
@@ -1041,22 +1064,6 @@ local function TicketNum(tnum)
 end
 
 
--- OnUpdate script to delay TicketListing()
-local total = 0
-local function ListUpdate(self, elapsed)
-	total = total + elapsed
-	if total >= 1 then
-		if #SFTListTable ~= nil and #SFTListTable ~= 0 then
-			TicketListing()
-		else
-			SFTicketOnlineButton:SetAlpha(1)
-		end
-		total = 0
-		TicketListingUpdate:SetScript("OnUpdate", nil)
-	end
-end
-
-
 -- Closed/New Tickets filtering
 local function ClosedNewNum(cnnum)
 	if strfind(cnnum, "New ticket from") then
@@ -1068,6 +1075,7 @@ local function ClosedNewNum(cnnum)
 		if SFTicketNameNew ~= nil then
 			SFTNameTable[SFTicketIDNew] = SFTicketNameNew
 		end
+		SFTOnlineTable[SFTicketIDNew] = 1
 		TicketListing()
 	end
 	if strfind(cnnum, "Closed by") then
@@ -1143,6 +1151,13 @@ function TicketListing()
 			local SFTicketTListFontCurFrame = _G["SFTicketTListFontFrame"..i]
 			SFTicketTListFontCurFrame:SetPoint("TOPLEFT", SFTicketTListContentFrame, 0, SFTicketTListFontHeight)
 			SFTicketTListFontCurFrame:SetTextColor(0, 0, 0)
+			if SFTOnlineTable[value] == 1 then
+				SFTicketTListFontCurFrame:SetTextColor(0, 0.85, 0)
+			elseif strfind(SFTNameTable[value], "Spam Report Sys") then
+				SFTicketTListFontCurFrame:SetTextColor(0, 0, 0)
+			else
+				SFTicketTListFontCurFrame:SetTextColor(0.90, 0, 0)
+			end
 			SFTicketTListFontCurFrame:SetFont("Fonts\\FRIZQT__.TTF", 16)
 			SFTicketTListFontCurFrame:SetJustifyH("LEFT")
 			SFTicketTListFontCurFrame:SetText(value)
@@ -1181,6 +1196,7 @@ function TicketListing()
 				end
 			end)
 			if #SFTListTable == i then
+				ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", OnlineNum)
 				if #SFTListTable < 7 then
 					SFTicketTListScrollBar:Hide()
 				else
@@ -1191,6 +1207,7 @@ function TicketListing()
 					SFTicketTListScrollBar:SetMinMaxValues(0, 0)
 					SFTicketTListFontHeight = nil
 					ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", TicketNum)
+
 					if _G["SFTicketTListFontFrame"..i+1] ~= nil then
 						_G["SFTicketTListFontFrame"..i+1]:SetText("")
 						_G["SFTicketTListFontButton"..i+1]:Hide()
@@ -1214,6 +1231,19 @@ function TicketListing()
 		SFTicketOnlineButton:SetAlpha(1)
 	end
 end
+
+
+-- Online Button
+SFTicketOnlineButton:SetScript("OnClick", function()
+	SFTOnlineTable = {}
+	if #SFTListTable ~= nil and #SFTListTable ~= 0 then
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", OnlineNum)
+	end
+	SendChatMessage(".ticket online", "GUILD", nil)
+	SFTicketInputBox:ClearFocus()
+	PlaySound("UChatScrollButton")
+	TicketListingUpdate:SetScript("OnUpdate", ListUpdate)
+end)
 
 
 -- List Button
