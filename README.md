@@ -15,9 +15,10 @@ Many features aren't displayed on screenshots, it includes:
 <ul>
 <li>Movable main frame and settings frame</li>
   <li>Scrollable input box (±1)</li>
-  <li>Ticket listing on a scrollable frame at the left of the addon</li>
+  <li>Ticket listing on a scrollable frame at the left of the addon
     <ul>
     <li>Clickable list</li>
+    <li>Color displaying online/offline status</li>
     <li>Tooltip displaying ticket's owner and whether it's assigned or not</li>
     <li>Incoming tickets are directly added and closed ones removed</li>
     </ul>
