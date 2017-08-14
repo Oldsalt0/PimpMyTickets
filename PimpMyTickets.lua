@@ -1075,7 +1075,9 @@ local function ClosedNewNum(cnnum)
 		if SFTicketNameNew ~= nil then
 			SFTNameTable[SFTicketIDNew] = SFTicketNameNew
 		end
-		SFTOnlineTable[SFTicketIDNew] = 1
+		if not strfind(SFTicketNameNew, "Spam Report Sys") then
+			SFTOnlineTable[SFTicketIDNew] = 1
+		end
 		TicketListing()
 	end
 	if strfind(cnnum, "Closed by") then
