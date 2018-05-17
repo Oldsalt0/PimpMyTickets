@@ -1236,15 +1236,15 @@ end)
 -- Banhammer Popup
 local banDuration = ""
 local banReason = ""
-local function BanhammerFilter(pinf)
-	local pinfoname = ""
-	local pinfoacc = ""
-	local pinfoip = ""
-	if strfind(pinf, "Account: (%S+)") then
-		_, _, pinfoname = strfind(pinf, "%[(.+)%]")
-		_, _, pinfoacc = strfind(pinf, "Account: (%S+)")
-		_, _, pinfoip = strfind(pinf, "Last IP: (%S+)")
-		if pinfoname == UnitName("player") then
+local function BanhammerFilter(msg)
+	local playerName = ""
+	local playerAcc = ""
+	local playerIP = ""
+	if strfind(msg, "Account: (%S+)") then
+		_, _, playerName = strfind(msg, "%[(.+)%]")
+		_, _, playerAcc = strfind(msg, "Account: (%S+)")
+		_, _, playerIP = strfind(msg, "Last IP: (%S+)")
+		if playerName == UnitName("player") then
 			GameTooltip:SetOwner(HideButton, "ANCHOR_RIGHT", -33, 3)
 			GameTooltip:SetText("You have tickets to answer still")
 			GameTooltip:Show()
@@ -1257,14 +1257,14 @@ local function BanhammerFilter(pinf)
 				button3 = "Acc. only",
 				button2 = "Cancel",
 				OnShow = function()
-					StaticPopup1Text:SetText("You are going to ban "..pinfoname.."\n Account: "..pinfoacc.."\n IP: "..pinfoip.."\n Duration: "..banDuration.."\n Reason: "..banReason)
+					StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n Duration: "..banDuration.."\n Reason: "..banReason)
 				end,
 				OnAccept = function()
-					SendChatMessage(".ban account "..pinfoacc.." "..banDuration.." "..banReason, "GUILD", nil)
-					SendChatMessage(".ban ip "..pinfoip.." "..banDuration.." "..banReason, "GUILD", nil)
+					SendChatMessage(".ban account "..playerAcc.." "..banDuration.." "..banReason, "GUILD", nil)
+					SendChatMessage(".ban ip "..playerIP.." "..banDuration.." "..banReason, "GUILD", nil)
 				end,
 				OnAlt = function()
-					SendChatMessage(".ban account "..pinfoacc.." "..banDuration.." "..banReason, "GUILD", nil)
+					SendChatMessage(".ban account "..playerAcc.." "..banDuration.." "..banReason, "GUILD", nil)
 				end,
 				cancels = "BANREASON_POPUP",
 				exclusive = 1,
@@ -1278,7 +1278,7 @@ local function BanhammerFilter(pinf)
 				button1 = "Next",
 				button2 = "Cancel",
 				OnShow = function()
-					StaticPopup1Text:SetText("You are going to ban "..pinfoname.."\n Account: "..pinfoacc.."\n IP: "..pinfoip.."\n Duration: "..banDuration.."\n\nEnter a ban reason:")
+					StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n Duration: "..banDuration.."\n\nEnter a ban reason:")
 					StaticPopup1EditBox:SetText("")
 				end,
 				OnAccept = function()
@@ -1309,7 +1309,7 @@ local function BanhammerFilter(pinf)
 				button1 = "Next",
 				button2 = "Cancel",
 				OnShow = function()
-					StaticPopup1Text:SetText("You are going to ban "..pinfoname.."\n Account: "..pinfoacc.."\n IP: "..pinfoip.."\n\nEnter a ban duration:")
+					StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n\nEnter a ban duration:")
 					StaticPopup1EditBox:SetText("")
 				end,
 				OnAccept = function()
@@ -1350,8 +1350,15 @@ hooksecurefunc("ToggleDropDownMenu", function()
 			local button = _G["DropDownList"..UIDROPDOWNMENU_MENU_LEVEL.."Button"..i]
 			if button.value == "BANHAMMER_BUTTON" then
 				button.func = function()
-					SendChatMessage(".pinfo "..DropDownList1Button1:GetText(), "GUILD", nil)
-					ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", BanhammerFilter)
+					if DropDownList1Button1:GetText() == UnitName("player") then
+						GameTooltip:SetOwner(HideButton, "ANCHOR_RIGHT", -33, 3)
+						GameTooltip:SetText("You have tickets to answer still")
+						GameTooltip:Show()
+						GameTooltip:FadeOut()
+					else
+						SendChatMessage(".pinfo "..DropDownList1Button1:GetText(), "GUILD", nil)
+						ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", BanhammerFilter)
+					end
 				end
 				break
 			end
@@ -1361,3 +1368,137 @@ hooksecurefunc("ToggleDropDownMenu", function()
 		end
 	end
 end)
+
+
+
+-- Hyperlinks
+local currentObjectName = ""
+local currentObjectID = ""
+local currentObjectGUID = ""
+local currentObjectLocation = ""
+local currentObjectOrientation = ""
+local waitingFullLog = 0
+local function HyperlinkFilter(msg)
+	if strfind(msg, "gameobject_entry") then
+		return false, msg.."- |cffffa500|HaddGameObject:"..select(3, strfind(msg, "gameobject_entry:(%d+)")).."|h[Add]|h|r - |cffffa500|HlistGameObject:"..select(3, strfind(msg, "gameobject_entry:(%d+)")).."|h[List]|h|r"
+	end
+	if strfind(msg, "Add Game Object") then
+		local gameObjectID = select(3, strfind(msg, "'(%d+)'"))
+		local gameObjectName = select(3, strfind(msg, "(%(.-%))"))
+		local gameObjectGUID = select(3, strfind(msg, "GUID: (%d+)"))
+		local gameObjectLoc = select(3, strfind(msg, "added at %'(.-)%'"))
+		return false, "|cff00b300Added Game Object:|r\nID: "..gameObjectID.." "..gameObjectName.." - |cffffa500|HaddGameObject:"..gameObjectID.."|h[Duplicate]|h|r - |cffffa500|HlistGameObject:"..gameObjectID.."|h[List]|h|r\nGUID: "..gameObjectGUID.." - |cffffa500|HactGameObject:"..gameObjectGUID.."|h[Activate]|h|r - |cffffa500|HgotoGameObject:"..gameObjectGUID.."|h[Go to]|h|r - |cffffa500|HmoveGameObject:"..gameObjectGUID.."|h[Move]|h|r - |cffffa500|HturnGameObject:"..gameObjectGUID.."|h[Turn]|h|r - |cffff4500|HdelGameObject:"..gameObjectGUID.."|h[Delete]|h|r\nLocation: "..gameObjectLoc.." - |cffffa500|HteleLocation:"..gameObjectLoc.."|h[Teleport to]|h|r"
+	end
+	if strfind(msg, "Object activated") then
+		return false, "|cffffa500Game "..msg
+	end
+	if strfind(msg, "GUID: (%d+)%) moved") then
+		return false, "|cffffa500Game Object (GUID: "..select(3, strfind(msg, "GUID: (%d+)"))..") moved|r"
+	end
+	if strfind(msg, "GUID: (%d+)%) turned") then
+		return false, "|cffffa500Game Object (GUID: "..select(3, strfind(msg, "GUID: (%d+)"))..") turned|r"
+	end
+	if strfind(msg, "GUID: (%d+)%) removed") then
+		return false, "|cffff4500Game Object (GUID: "..select(3, strfind(msg, "GUID: (%d+)"))..") removed|r"
+	end
+	if strfind(msg, "Selected object:") then
+		waitingFullLog = 1
+		return true
+	end
+	if strfind(msg, "Hitemset:%d+") and waitingFullLog == 1 then
+		currentObjectName = select(3, strfind(msg, "%[(.+)%]"))
+		return true
+	end
+	if strfind(msg, "GUID: %d+ ID: %d+") and waitingFullLog == 1 then
+		currentObjectID = select(3, strfind(msg, "%d+ ID: (%d+)"))
+		currentObjectGUID = select(3, strfind(msg, "GUID: (%d+)"))
+		return true
+	end
+	if strfind(msg, "X: %d+.%d+ Y: %d+.%d+ Z: %d+.%d+ MapId: %d+") and waitingFullLog == 1 then
+		currentObjectLocation = select(3, strfind(msg, "X: (%d+.%d+)")).." "..select(3, strfind(msg, "Y: (%d+.%d+)")).." "..select(3, strfind(msg, "Z: (%d+.%d+)")).." "..select(3, strfind(msg, "MapId: (%d+)"))
+		return true
+	end
+	if strfind(msg, "Orientation: %d+") and waitingFullLog == 1 then
+		currentObjectOrientation = msg
+		return true
+	end
+	if strfind(msg, "SpawnTime:") and waitingFullLog == 1 then
+		waitingFullLog = 0
+		return false, "|cffffa500Selected Game Object:|r\nID: "..currentObjectID.." ("..currentObjectName..") - |cffffa500|HaddGameObject:"..currentObjectID.."|h[Duplicate]|h|r - |cffffa500|HlistGameObject:"..currentObjectID.."|h[List]|h|r\nGUID: "..currentObjectGUID.." - |cffffa500|HactGameObject:"..currentObjectGUID.."|h[Activate]|h|r - |cffffa500|HgotoGameObject:"..currentObjectGUID.."|h[Go to]|h|r - |cffffa500|HmoveGameObject:"..currentObjectGUID.."|h[Move]|h|r - |cffffa500|HturnGameObject:"..currentObjectGUID.."|h[Turn]|h|r - |cffff4500|HdelGameObject:"..currentObjectGUID.."|h[Delete]|h|r\nLocation: "..currentObjectLocation.." - |cffffa500|HteleLocation:"..currentObjectLocation.."|h[Teleport to]|h|r\n"..currentObjectOrientation.."\n"..msg
+	end
+	if strfind(msg, "Player selected NPC") then
+		return false, "|cffffa500"..msg..":|r "..UnitName("target")
+	end
+	if strfind(msg, "GUID: %d+.") then
+		return false, msg.." |cffffa500|HgotoCreature:"..select(3, strfind(msg, "GUID: (%d+)")).."|h[Go to]|h|r - |cffffa500|HmoveCreature:"..select(3, strfind(msg, "GUID: (%d+)")).."|h[Move]|h|r - |cffff4500|HdelCreature:"..select(3, strfind(msg, "GUID: (%d+)")).."|h[Delete]|h|r"
+	end
+	if strfind(msg, "Entry: %d+.") then
+		return false, msg.." |cffffa500|HaddCreature:"..select(3, strfind(msg, "Entry: (%d+)")).."|h[Duplicate]|h|r - |cffffa500|HlistCreature:"..select(3, strfind(msg, "Entry: (%d+)")).."|h[List]|h|r"
+	end
+	if strfind(msg, "DisplayID: %d+") then
+		return false, "DisplayID: "..select(3, strfind(msg, "DisplayID: (%d+)")).." - |cffffa500|HmorphTarget:"..select(3, strfind(msg, "DisplayID: (%d+)")).."|h[Morph]|h|r - Native DisplayID: "..select(3, strfind(msg, "Native: (%d+)")).." - |cffffa500|HmorphTarget:"..select(3, strfind(msg, "Native: (%d+)")).."|h[Morph]|h|r"
+	end
+	if strfind(msg, "Position: %d+.%d+ %d+.%d+ %d+.%d+.") then
+		return false, msg.." |cffffa500|HteleLocation:"..select(3, strfind(msg, "Position: (%d+.%d+ %d+.%d+ %d+.%d+)")).."|h[Teleport to]|h|r"
+	end
+	if strfind(msg, "creature_entry") then
+		return false, msg.."- |cffffa500|HaddCreature:"..select(3, strfind(msg, "creature_entry:(%d+)")).."|h[Add]|h|r - |cffffa500|HlistCreature:"..select(3, strfind(msg, "creature_entry:(%d+)")).."|h[List]|h|r"
+	end
+	if strfind(msg, "Hspell:%d+") then
+		return false, msg.." - |cffffa500|HlearnSpell:"..select(3, strfind(msg, "Hspell:(%d+)")).."|h[Learn]|h|r - |cffffa500|HunlearnSpell:"..select(3, strfind(msg, "Hspell:(%d+)")).."|h[Unlearn]|h|r"
+	end
+	if strfind(msg, "Hquest:%d+") then
+		return false, msg.."- |cffffa500|HaddQuest:"..select(3, strfind(msg, "Hquest:(%d+)")).."|h[Add]|h|r - |cffffa500|HcompleteQuest:"..select(3, strfind(msg, "Hquest:(%d+)")).."|h[Complete]|h|r - |cffffa500|HdelQuest:"..select(3, strfind(msg, "Hquest:(%d+)")).."|h[Remove]|h|r"
+	end
+	if strfind(msg, "Hitem:%d+") then
+		return false, msg.."- |cffffa500|HaddItem:"..select(3, strfind(msg, "Hitem:(%d+)")).."|h[Add]|h|r"
+	end
+end
+ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", HyperlinkFilter)
+
+local OldSetItemRef = SetItemRef
+function SetItemRef(link, text, button)
+	if strsub(link, 1, 13) == "addGameObject" then
+		SendChatMessage(".gobject add "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 14) == "listGameObject" then
+		SendChatMessage(".list object "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 13) == "actGameObject" then
+		SendChatMessage(".gobject activate "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 14) == "gotoGameObject" then
+		SendChatMessage(".go object "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 14) == "moveGameObject" then
+		SendChatMessage(".gobject move "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 14) == "turnGameObject" then
+		SendChatMessage(".gobject turn "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 13) == "delGameObject" then
+		SendChatMessage(".gobject delete "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 12) == "teleLocation" then
+		SendChatMessage(".go "..select(3, strfind(link, ":(.+)")), "GUILD", nil)
+	elseif strsub(link, 1, 12) == "gotoCreature" then
+		SendChatMessage(".go creature "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 12) == "moveCreature" then
+		SendChatMessage(".npc move "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 11) == "delCreature" then
+		SendChatMessage(".npc delete "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 11) == "addCreature" then
+		SendChatMessage(".npc add "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 12) == "listCreature" then
+		SendChatMessage(".list creature "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 11) == "morphTarget" then
+		SendChatMessage(".modify morph "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 10) == "learnSpell" then
+		SendChatMessage(".learn "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 12) == "unlearnSpell" then
+		SendChatMessage(".unlearn "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 8) == "addQuest" then
+		SendChatMessage(".quest add "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 13) == "completeQuest" then
+		SendChatMessage(".quest complete "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 8) == "delQuest" then
+		SendChatMessage(".quest remove "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 7) == "addItem" then
+		SendChatMessage(".additem "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	else
+		OldSetItemRef(link, text, button)
+	end
+end
