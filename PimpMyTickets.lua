@@ -1,7 +1,5 @@
 ﻿-- PimpMyTickets (TrinityCore/OregonCore)
 
-
-
 -- Main Frames
 local TicketParentFrame = CreateFrame("Frame", "TicketParentFrame", UIParent)
 TicketParentFrame:SetPoint("CENTER")
@@ -24,8 +22,6 @@ TicketMainFrame:SetPoint("CENTER")
 TicketMainFrame:SetWidth(160)
 TicketMainFrame:SetHeight(135)
 
-
-
 -- Hide Frame
 local HideFrame = CreateFrame("Frame", nil, UIParent)
 local HideButton = CreateFrame("Button", nil, HideFrame, "UIPanelButtonGrayTemplate")
@@ -40,8 +36,6 @@ HideButton:SetPushedTexture(x)
 HideButton:SetText("X")
 HideButton:GetHighlightTexture():SetVertexColor(0.5, 0.5, 0.5)
 HideButton:SetAlpha(0.75)
-
-
 
 -- Tabs Frame
 local TabsFrame = CreateFrame("Frame", nil, UIParent)
@@ -82,8 +76,6 @@ SettingsTabTexture:SetTexture("Interface\\AddOns\\PimpMyTickets\\icon-config.tga
 SettingsTabTexture:SetPoint("TOPLEFT", TicketMainFrame, 128.5, -6.5)
 SettingsTabTexture:SetWidth(25)
 SettingsTabTexture:SetHeight(25)
-
-
 
 -- Main Tab
 local TicketInputBox = CreateFrame("EditBox", nil, TicketMainFrame, "InputBoxTemplate")
@@ -132,8 +124,6 @@ for i,value in pairs({ TicketViewButton, TicketCloseButton, TicketInfoButton, Ti
 	value:GetHighlightTexture():SetVertexColor(0.5, 0.5, 0.5)
 end
 
-
-
 -- GM Tab
 local GMTabFrame = CreateFrame("Frame", nil, UIParent)
 GMTabFrame:Hide()
@@ -176,8 +166,6 @@ for i,value in pairs({ GMModeButton, GMInvisibleButton, GMBadgeButton, GMWhisper
 	value:SetHitRectInsets(0, 0, 0, 0)
 	value:SetChecked(true)
 end
-
-
 
 -- Settings Panel
 local SettingsFrame = CreateFrame("Frame", "SettingsFrame", UIParent)
@@ -280,8 +268,6 @@ for i,value in pairs({ SettingsBlackButton, SettingsRedButton, SettingsGreenButt
 	value:SetHitRectInsets(-100, 0, 0, 0)
 end
 
-
-
 -- Ticket List Frame
 local TicketListFrame = CreateFrame("Frame", nil, UIParent)
 TicketListFrame:SetWidth(47)
@@ -315,16 +301,12 @@ TicketListContentFrame:SetHeight(250)
 TicketListScrollFrame.TicketListContentFrame = TicketListContentFrame
 TicketListScrollFrame:SetScrollChild(TicketListContentFrame)
 
-
-
 -- Tables
 local guildTable = {}
 local ticketListTable = {}
 local ticketNameTable = {}
 local assignedTicketTable = {}
 local onlineTicketTable = {}
-
-
 
 -- Mono Color Function
 local function ColorFrames(cr, cg, cb)
@@ -346,8 +328,6 @@ local function ColorFrames(cr, cg, cb)
 	GMBadgeFrame:GetRegions():SetVertexColor(cr, cg, cb)
 	GMWhispersFrame:GetRegions():SetVertexColor(cr, cg, cb)
 end
-
-
 
 -- Reset Command
 SLASH_PIMPMYTICKETS1, SLASH_PIMPMYTICKETS2 = "/pimpmytickets", "/pmt"
@@ -387,8 +367,6 @@ SlashCmdList["PIMPMYTICKETS"] = function(msg)
 		DEFAULT_CHAT_FRAME:AddMessage("Available arguments: reset")
 	end
 end
-
-
 
 -- Saved Settings
 local SavedSettingsFrame = CreateFrame("Frame")
@@ -451,8 +429,6 @@ SavedSettingsFrame:SetScript("OnEvent", function(self, event, arg1, ...)
 	end
 end)
 
-
-
 -- Hide Button
 HideButton:SetScript("OnDragStart", function() TicketParentFrame:StartMoving() end)
 HideButton:SetScript("OnDragStop", function() TicketParentFrame:StopMovingOrSizing() end)
@@ -513,8 +489,6 @@ HideButton:SetScript("OnClick", function()
 		end
 	end
 end)
-
-
 
 -- Tickets Tab
 TicketsTabButton:SetScript("OnDragStart", function() TicketParentFrame:StartMoving() end)
@@ -1017,8 +991,6 @@ TicketUnassignButton:SetScript("OnClick", function()
 	end
 end)
 
-
-
 -- GM Tab
 GMTabButton:SetScript("OnDragStart", function() TicketParentFrame:StartMoving() end)
 GMTabButton:SetScript("OnDragStop", function() TicketParentFrame:StopMovingOrSizing() end)
@@ -1067,8 +1039,6 @@ GMWhispersButton:SetScript("OnClick", function()
 		SendChatMessage(".whisper on", "GUILD", nil)
 	end
 end)
-
-
 
 -- Settings Frame
 SettingsTabButton:SetScript("OnDragStart", function() TicketParentFrame:StartMoving() end)
@@ -1231,8 +1201,6 @@ SettingsCloseButton:SetScript("OnClick", function()
 	SettingsTabButton:SetAlpha(0.75)
 end)
 
-
-
 -- Banhammer Popup
 local banDuration = ""
 local banReason = ""
@@ -1244,99 +1212,92 @@ local function BanhammerFilter(msg)
 		_, _, playerName = strfind(msg, "%[(.+)%]")
 		_, _, playerAcc = strfind(msg, "Account: (%S+)")
 		_, _, playerIP = strfind(msg, "Last IP: (%S+)")
-		if playerName == UnitName("player") then
-			GameTooltip:SetOwner(HideButton, "ANCHOR_RIGHT", -33, 3)
-			GameTooltip:SetText("You have tickets to answer still")
-			GameTooltip:Show()
-			GameTooltip:FadeOut()
-			ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", BanhammerFilter)
-		else
-			StaticPopupDialogs["BANHAMMER_POPUP"] = {
-				text = "",
-				button1 = "Acc. + IP",
-				button3 = "Acc. only",
-				button2 = "Cancel",
-				OnShow = function()
-					StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n Duration: "..banDuration.."\n Reason: "..banReason)
-				end,
-				OnAccept = function()
-					SendChatMessage(".ban account "..playerAcc.." "..banDuration.." "..banReason, "GUILD", nil)
-					SendChatMessage(".ban ip "..playerIP.." "..banDuration.." "..banReason, "GUILD", nil)
-				end,
-				OnAlt = function()
-					SendChatMessage(".ban account "..playerAcc.." "..banDuration.." "..banReason, "GUILD", nil)
-				end,
-				cancels = "BANREASON_POPUP",
-				exclusive = 1,
-				hideOnEscape = 1,
-				showAlert = 1,
-				timeout = 0,
-				whileDead = 1,
-			}
-			StaticPopupDialogs["BANREASON_POPUP"] = {
-				text = "",
-				button1 = "Next",
-				button2 = "Cancel",
-				OnShow = function()
-					StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n Duration: "..banDuration.."\n\nEnter a ban reason:")
-					StaticPopup1EditBox:SetText("")
-				end,
-				OnAccept = function()
-					if StaticPopup1EditBox:GetText() ~= "" then
-						banReason = StaticPopup1EditBox:GetText()
-						StaticPopup_Show("BANHAMMER_POPUP")
-					end
-				end,
-				EditBoxOnEnterPressed = function()
-					if StaticPopup1EditBox:GetText() ~= "" then
-						banReason = StaticPopup1EditBox:GetText()
-						StaticPopup_Show("BANHAMMER_POPUP")
-					end
-				end,
-				EditBoxOnEscapePressed = function()
-					StaticPopup_Hide("BANREASON_POPUP")
-				end,
-				cancels = "BANDURATION_POPUP",
-				exclusive = 1,
-				hasEditBox = 1,
-				maxLetters = 0,
-				showAlert = 1,
-				timeout = 0,
-				whileDead = 1,
-			}
-			StaticPopupDialogs["BANDURATION_POPUP"] = {
-				text = "",
-				button1 = "Next",
-				button2 = "Cancel",
-				OnShow = function()
-					StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n\nEnter a ban duration:")
-					StaticPopup1EditBox:SetText("")
-				end,
-				OnAccept = function()
-					if StaticPopup1EditBox:GetText() ~= "" then
-						banDuration = StaticPopup1EditBox:GetText()
-						StaticPopup_Show("BANREASON_POPUP")
-					end
-				end,
-				EditBoxOnEnterPressed = function()
-					if StaticPopup1EditBox:GetText() ~= "" then
-						banDuration = StaticPopup1EditBox:GetText()
-						StaticPopup_Show("BANREASON_POPUP")
-					end
-				end,
-				EditBoxOnEscapePressed = function()
-					StaticPopup_Hide("BANDURATION_POPUP")
-				end,
-				exclusive = 1,
-				hasEditBox = 1,
-				maxLetters = 8,
-				showAlert = 1,
-				timeout = 0,
-				whileDead = 1,
-			}
-			StaticPopup_Show ("BANDURATION_POPUP")
-			ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", BanhammerFilter)
-		end
+		StaticPopupDialogs["BANHAMMER_POPUP"] = {
+			text = "",
+			button1 = "Acc. + IP",
+			button3 = "Acc. only",
+			button2 = "Cancel",
+			OnShow = function()
+				StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n Duration: "..banDuration.."\n Reason: "..banReason)
+			end,
+			OnAccept = function()
+				SendChatMessage(".ban account "..playerAcc.." "..banDuration.." "..banReason, "GUILD", nil)
+				SendChatMessage(".ban ip "..playerIP.." "..banDuration.." "..banReason, "GUILD", nil)
+			end,
+			OnAlt = function()
+				SendChatMessage(".ban account "..playerAcc.." "..banDuration.." "..banReason, "GUILD", nil)
+			end,
+			cancels = "BANREASON_POPUP",
+			exclusive = 1,
+			hideOnEscape = 1,
+			showAlert = 1,
+			timeout = 0,
+			whileDead = 1,
+		}
+		StaticPopupDialogs["BANREASON_POPUP"] = {
+			text = "",
+			button1 = "Next",
+			button2 = "Cancel",
+			OnShow = function()
+				StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n Duration: "..banDuration.."\n\nEnter a ban reason:")
+				StaticPopup1EditBox:SetText("")
+			end,
+			OnAccept = function()
+				if StaticPopup1EditBox:GetText() ~= "" then
+					banReason = StaticPopup1EditBox:GetText()
+					StaticPopup_Show("BANHAMMER_POPUP")
+				end
+			end,
+			EditBoxOnEnterPressed = function()
+				if StaticPopup1EditBox:GetText() ~= "" then
+					banReason = StaticPopup1EditBox:GetText()
+					StaticPopup_Show("BANHAMMER_POPUP")
+				end
+			end,
+			EditBoxOnEscapePressed = function()
+				StaticPopup_Hide("BANREASON_POPUP")
+			end,
+			cancels = "BANDURATION_POPUP",
+			exclusive = 1,
+			hasEditBox = 1,
+			maxLetters = 0,
+			showAlert = 1,
+			timeout = 0,
+			whileDead = 1,
+		}
+		StaticPopupDialogs["BANDURATION_POPUP"] = {
+			text = "",
+			button1 = "Next",
+			button2 = "Cancel",
+			OnShow = function()
+				StaticPopup1Text:SetText("You are going to ban "..playerName.."\n Account: "..playerAcc.."\n IP: "..playerIP.."\n\nEnter a ban duration:")
+				StaticPopup1EditBox:SetText("")
+			end,
+			OnAccept = function()
+				if StaticPopup1EditBox:GetText() ~= "" then
+					banDuration = StaticPopup1EditBox:GetText()
+					StaticPopup_Show("BANREASON_POPUP")
+				end
+			end,
+			EditBoxOnEnterPressed = function()
+				if StaticPopup1EditBox:GetText() ~= "" then
+					banDuration = StaticPopup1EditBox:GetText()
+					StaticPopup_Show("BANREASON_POPUP")
+				end
+			end,
+			EditBoxOnEscapePressed = function()
+				StaticPopup_Hide("BANDURATION_POPUP")
+			end,
+			exclusive = 1,
+			hasEditBox = 1,
+			maxLetters = 8,
+			showAlert = 1,
+			timeout = 0,
+			whileDead = 1,
+		}
+		StaticPopup_Show ("BANDURATION_POPUP")
+		ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", BanhammerFilter)
+
 	end
 end
 
@@ -1368,8 +1329,6 @@ hooksecurefunc("ToggleDropDownMenu", function()
 		end
 	end
 end)
-
-
 
 -- Hyperlinks
 local currentObjectName = ""
