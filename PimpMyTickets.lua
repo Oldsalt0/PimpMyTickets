@@ -291,13 +291,12 @@ TicketListScrollBar:SetScript("OnValueChanged", function(self, value)
 	self:GetParent():SetVerticalScroll(value)
 end)
 TicketListFrame.TicketListScrollBar = TicketListScrollBar
-TicketListScrollFrameScrollUpButton
-:Hide()
+TicketListScrollFrameScrollUpButton:Hide()
 TicketListScrollFrameScrollDownButton:Hide()
 
 local TicketListContentFrame = CreateFrame("Frame", nil, TicketListScrollFrame)
 TicketListContentFrame:SetWidth(120)
-TicketListContentFrame:SetHeight(250) 
+TicketListContentFrame:SetHeight(250)
 TicketListScrollFrame.TicketListContentFrame = TicketListContentFrame
 TicketListScrollFrame:SetScrollChild(TicketListContentFrame)
 
@@ -1388,16 +1387,16 @@ local function HyperlinkFilter(msg)
 	if strfind(msg, "Player selected NPC") then
 		return false, "|cffffa500"..msg..":|r "..UnitName("target")
 	end
-	if strfind(msg, "GUID: %d+.") then
+	if strfind(msg, "GUID: %d+%.") then
 		return false, msg.." |cffffa500|HgotoCreature:"..select(3, strfind(msg, "GUID: (%d+)")).."|h[Go to]|h|r - |cffffa500|HmoveCreature:"..select(3, strfind(msg, "GUID: (%d+)")).."|h[Move]|h|r - |cffff4500|HdelCreature:"..select(3, strfind(msg, "GUID: (%d+)")).."|h[Delete]|h|r"
 	end
-	if strfind(msg, "Entry: %d+.") then
+	if strfind(msg, "Entry: %d+%.") then
 		return false, msg.." |cffffa500|HaddCreature:"..select(3, strfind(msg, "Entry: (%d+)")).."|h[Duplicate]|h|r - |cffffa500|HlistCreature:"..select(3, strfind(msg, "Entry: (%d+)")).."|h[List]|h|r"
 	end
 	if strfind(msg, "DisplayID: %d+") then
 		return false, "DisplayID: "..select(3, strfind(msg, "DisplayID: (%d+)")).." - |cffffa500|HmorphTarget:"..select(3, strfind(msg, "DisplayID: (%d+)")).."|h[Morph]|h|r - Native DisplayID: "..select(3, strfind(msg, "Native: (%d+)")).." - |cffffa500|HmorphTarget:"..select(3, strfind(msg, "Native: (%d+)")).."|h[Morph]|h|r"
 	end
-	if strfind(msg, "Position: %d+.%d+ %d+.%d+ %d+.%d+.") then
+	if strfind(msg, "Position: %d+.%d+ %d+.%d+ %d+.%d+%.") then
 		return false, msg.." |cffffa500|HteleLocation:"..select(3, strfind(msg, "Position: (%d+.%d+ %d+.%d+ %d+.%d+)")).."|h[Teleport to]|h|r"
 	end
 	if strfind(msg, "creature_entry") then
@@ -1457,6 +1456,12 @@ function SetItemRef(link, text, button)
 		SendChatMessage(".quest remove "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
 	elseif strsub(link, 1, 7) == "addItem" then
 		SendChatMessage(".additem "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+	elseif strsub(link, 1, 9) == "creature:" then
+		SendChatMessage(".go creature "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+		DEFAULT_CHAT_FRAME:AddMessage("|cffffa500Teleported at Creature GUID: "..select(3, strfind(link, "(%d+)")))
+	elseif strsub(link, 1, 11) == "gameobject:" then
+		SendChatMessage(".go object "..select(3, strfind(link, "(%d+)")), "GUILD", nil)
+		DEFAULT_CHAT_FRAME:AddMessage("|cffffa500Teleported at Game Object GUID: "..select(3, strfind(link, "(%d+)")))
 	else
 		OldSetItemRef(link, text, button)
 	end
